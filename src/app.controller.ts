@@ -9,10 +9,13 @@ import { Cron } from '@nestjs/schedule';
 @Controller()
 export class AppController {
   private readonly logger = new Logger(AppController.name);
+  private remindUser: string[] = [];
   constructor(
     private readonly appService: AppService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.remindUser = this.configService.get('remindUser').split(',');
+  }
 
   findJournalType(str: string) {
     const journalMap = {
@@ -66,7 +69,7 @@ export class AppController {
       }
       const options = {
         from: this.configService.get('user'),
-        to: this.configService.get('remindUser'),
+        to: this.remindUser,
         subject: sendType + '更新提醒',
         text,
       };
@@ -83,7 +86,7 @@ export class AppController {
   @Cron('1 1 16 * * *')
   async runTask() {
     const mails = await this.appService.getFilterMails(
-      this.configService.get('asyncDateNum'),
+      parseInt(this.configService.get('asyncDateNum')),
     );
     const successPublish = [];
     const errorPublish = [];
