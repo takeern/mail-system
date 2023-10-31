@@ -66,6 +66,10 @@ export class AppController {
       let text = '';
       if (sendType === 'fail') {
         results.forEach((r) => (text += r.msg + '\n\r'));
+      } else {
+        results.forEach(
+          (r) => (text += `${r.subject}-${r.fileName} 发布成功` + '\n\r'),
+        );
       }
       const options = {
         from: this.configService.get('user'),
@@ -101,7 +105,6 @@ export class AppController {
         continue;
       }
 
-      // if ()
       if (mail?.attachments?.length) {
         for (let i = 0; i < mail?.attachments?.length; i++) {
           const source = mail.attachments[i];
@@ -159,6 +162,11 @@ export class AppController {
                 subject: mail.subject,
               });
             }
+          } else {
+            errorPublish.push({
+              ...info,
+              msg: `发布失败，${res.error}`,
+            });
           }
         }
       }
@@ -167,6 +175,7 @@ export class AppController {
     console.log('successPublish', successPublish);
     console.log('errorPublish', errorPublish);
     this.sendEndMail(errorPublish);
+    this.sendEndMail(successPublish);
 
     return 'success';
   }
